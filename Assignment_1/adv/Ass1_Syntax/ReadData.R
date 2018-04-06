@@ -60,7 +60,7 @@ newdata$time.of.day[newdata$hour > 18 & newdata$hour <= 24] <- "evening"
 
 ######################################
 #Sort by id and date
-newdata <- newdata[order(id, date),]
+newdata <- newdata[order(id, converted.time),]
 ######################################
 
 
@@ -75,4 +75,28 @@ for (id_ in unique(newdata$id)) {
   new_id <- c(id_, n_days)
   DaysPerID <- rbind(DaysPerID, new_id, deparse.level = 0)
 }
+plot(DaysPerID[,2])
 ######################################
+
+######################################
+#What time is the 'mood' asked to be rated? 
+moodData <- subset(newdata, (!is.na(newdata[, newdata$value.mood])))
+table(moodData$hour)
+table(moodData$time.of.day)
+#No defined hours for app to request user to rate 'mood'
+######################################
+
+######################################
+#Distribution of mood 
+#not aggregated per day!
+table(moodData$value.mood)
+
+##Aggregate mood per day
+#Choose relevant variables
+aggMood <- moodData[, .(id ,value.mood, date)]
+#Aggregate by id and day with #count
+aggMood <- moodData[, list(mood_count = .N, mood_mean = mean(value.mood)), 
+                    by = .(id, date)]
+######################################
+
+
