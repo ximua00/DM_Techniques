@@ -1,7 +1,7 @@
 ######################################
 #Install packages, if not available
-install.packages("data.table")
-install.packages("lubridate")
+# install.packages("data.table")
+# install.packages("lubridate")
 ######################################
 
 ######################################
@@ -13,13 +13,16 @@ library(lubridate)
 
 ######################################
 #Load data
-Mood <- fread("../dataset_mood_smartphone.csv", na.strings = c("NA"), dec = c("."))
+Mood <- fread("dataset_mood_smartphone.csv", na.strings = c("NA"), dec = c("."))
 ######################################
 
 
 ######################################
-#Delete useless variables
-Mood$V1 <- NULL
+#Delete useless variables 
+# I don't think V1 is useless as the values start differing with the serial 
+# number from count '143507' onwards. So this part needs be reasoned why you
+# think it needs to be deleted if you still think it's useless.
+# Mood$V1 <- NULL
 ######################################
 
 
