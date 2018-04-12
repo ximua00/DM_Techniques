@@ -1,18 +1,27 @@
-
 ######################################
 #EXPLORATORY ANALYSIS (MOOD)
 ######################################
 #for how many days each "subject" is tracked
-DaysPerID <- c()
-for (id_ in unique(newdata$id)) {
-  n_days <- length(unique(newdata$date[which(newdata$id == id_)]))
-  new_id <- c(id_, n_days)
-  DaysPerID <- rbind(DaysPerID, new_id, deparse.level = 0)
-}
+# DaysPerID <- c()
+# 
+# for (id_ in unique(newdata$id)) {
+#   n_days <- length(unique(newdata$date[which(newdata$id == id_)]))
+#   new_id <- c(id_, n_days)
+#   DaysPerID <- rbind(DaysPerID, new_id, deparse.level = 0)
+# } 
+# --- Modifying this since for loops are inefficent in R ---
+DaysPerID <- data.frame(newdata$id, newdata$date)
+colnames(DaysPerID) <- c("ID", "Date")
+DaysPerID <- aggregate(x = DaysPerID$Date, by = DaysPerID["ID"],FUN = function(x) length(unique(x)))
 
-#Visualise
-#TODO
+colnames(DaysPerID) <- c("ID", "Days")
+DaysPerID$ID <- as.character(DaysPerID$ID)
+DaysPerID$Days <- as.numeric(DaysPerID$Days)
 
+DaysPerID$ID <- unlist(lapply(DaysPerID$ID, FUN = function(x) as.numeric(sub("AS14.", "", x))))
+
+#Visualize
+plot(DaysPerID, type="b", xlab = "AS14. IDs", ylab = "Days")
 #Conclusion: Each ID conducts the experiment for a different number of days
 ######################################
 
@@ -57,6 +66,3 @@ idMood <- aggMood[, .(mood_mean = mean(mood_mean)),
 #Total number of days the dataset was collected
 max(moodData$date) - min(moodData$date)
 ######################################
-
-
-
