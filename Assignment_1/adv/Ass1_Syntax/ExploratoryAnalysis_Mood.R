@@ -21,7 +21,8 @@ DaysPerID$Days <- as.numeric(DaysPerID$Days)
 DaysPerID$ID <- unlist(lapply(DaysPerID$ID, FUN = function(x) as.numeric(sub("AS14.", "", x))))
 
 #Visualize
-plot(DaysPerID, type="b", xlab = "AS14. IDs", ylab = "Days")
+ggplot(DaysPerID, aes(x=ID, y=Days)) +
+        geom_point(shape=19)
 #Conclusion: Each ID conducts the experiment for a different number of days
 ######################################
 
@@ -30,13 +31,15 @@ plot(DaysPerID, type="b", xlab = "AS14. IDs", ylab = "Days")
 ######################################
 #What time is the 'mood' asked to be rated? 
 moodData <- subset(newdata, (!is.na(newdata[, newdata$value.mood])))
-table(moodData$hour)
-table(moodData$time.of.day)
 
+ToDHours <- data.frame(moodData$time.of.day, moodData$hour)
+ToDHours <- aggregate(x = ToDHours$moodData.hour, by = ToDHours["moodData.time.of.day"], sum)
+colnames(ToDHours) <- c("Time_of_Day", "Total_Hours")
 #Visualise
-#TODO
+plot(ToDHours, type="h")
 
 #Conclusion: No fixed hours for app to request user to rate 'mood'
+# Also: Not many users used the app at "Dawn"
 ######################################
 
 
@@ -44,7 +47,7 @@ table(moodData$time.of.day)
 ######################################
 #Distribution of mood 
 #not aggregated per day!
-table(moodData$value.mood)
+head(moodData$value.mood, n=10)
 
 ##Aggregate mood per day
 #Choose relevant variables
@@ -54,10 +57,15 @@ aggMood <- moodData[, .(mood_count = .N, mood_mean = mean(value.mood)),
                     by = .(id, date)]
 
 #Visualise
-#TODO (average mood per user, track mood per user over time, etc…)
+#TODO (average mood per user, track mood per user over time, etc)
+
 #average mood per user
 idMood <- aggMood[, .(mood_mean = mean(mood_mean)), 
                   by = .(id)]
+
+idMood$id <- unlist(lapply(idMood$id, FUN = function(x) as.numeric(sub("AS14.", "", x))))
+ggplot(data = idMood, mapping = aes(x = id, y = mood_mean)) +
+        geom_point(shape = 19)
 ######################################
 
 
