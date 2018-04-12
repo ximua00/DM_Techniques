@@ -57,7 +57,7 @@ aggMood <- moodData[, .(mood_count = .N, mood_mean = mean(value.mood)),
                     by = .(id, date)]
 
 #Visualise
-#TODO (average mood per user, track mood per user over time, etc)
+#TODO (track mood per user over time)
 
 #average mood per user
 idMood <- aggMood[, .(mood_mean = mean(mood_mean)), 
