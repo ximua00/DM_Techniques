@@ -74,7 +74,7 @@ aggMoodDay[,`:=` (mean.7.previousdays = apply(.SD, 1, mean)),
 #Evaluate with e.g. RMSE
 #Try with more / less days to average
 
-#delete rows with missing values
+#delete rows with missing values and evaluate RMSE
 #aggMoodDayTest <- subset(aggMoodDay, (!is.na(aggMoodDay[, aggMoodDay$mean.7.previousdays])))
 #rmse(aggMoodDayTest$mood.daily.mean, aggMoodDayTest$mean.7.previousdays)
 ######################################
