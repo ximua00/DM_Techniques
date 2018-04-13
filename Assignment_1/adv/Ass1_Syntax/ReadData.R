@@ -8,6 +8,8 @@
 #Load packages
 library(data.table)
 library(lubridate)
+library(ggplot2)
+library(GGally)
 ######################################
 
 
@@ -69,7 +71,4 @@ newdata$week.day <- weekdays(newdata$date)
 #Sort by id and date
 newdata <- newdata[order(id, converted.time),]
 ######################################
-
-
-
 

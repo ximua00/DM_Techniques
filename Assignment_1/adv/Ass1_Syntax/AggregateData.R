@@ -102,8 +102,6 @@ aggData = newdata[, .(count = .N,
                       agg_count_weather = sum(count_value.appCat.weather, na.rm=TRUE)),
                   by = .(id, date)]
 
-
-
 ######################################
 # Include more interesting variables
 
@@ -119,4 +117,6 @@ aggData$weekday <- weekdays(aggData$date)
 
 ######################################
 
+ggcorr(data = aggData, label = TRUE, label_alpha = TRUE, label_size = 2.5, label_round = 2, 
+       hjust = 1, size = 3)
 

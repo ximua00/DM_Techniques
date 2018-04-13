@@ -2,14 +2,7 @@
 #EXPLORATORY ANALYSIS (MOOD)
 ######################################
 #for how many days each "subject" is tracked
-# DaysPerID <- c()
-# 
-# for (id_ in unique(newdata$id)) {
-#   n_days <- length(unique(newdata$date[which(newdata$id == id_)]))
-#   new_id <- c(id_, n_days)
-#   DaysPerID <- rbind(DaysPerID, new_id, deparse.level = 0)
-# } 
-# --- Modifying this since for loops are inefficent in R ---
+
 DaysPerID <- data.frame(newdata$id, newdata$date)
 colnames(DaysPerID) <- c("ID", "Date")
 DaysPerID <- aggregate(x = DaysPerID$Date, by = DaysPerID["ID"],FUN = function(x) length(unique(x)))
@@ -22,7 +15,8 @@ DaysPerID$ID <- unlist(lapply(DaysPerID$ID, FUN = function(x) as.numeric(sub("AS
 
 #Visualize
 ggplot(DaysPerID, aes(x=ID, y=Days)) +
-        geom_point(shape=19)
+        geom_line() +
+        geom_point(size =2, shape=19, fill = "black", colour = "black")
 #Conclusion: Each ID conducts the experiment for a different number of days
 ######################################
 
@@ -36,7 +30,8 @@ ToDHours <- data.frame(moodData$time.of.day, moodData$hour)
 ToDHours <- aggregate(x = ToDHours$moodData.hour, by = ToDHours["moodData.time.of.day"], sum)
 colnames(ToDHours) <- c("Time_of_Day", "Total_Hours")
 #Visualise
-plot(ToDHours, type="h")
+ggplot(ToDHours, aes(x = Time_of_Day, y = Total_Hours)) +
+        geom_bar(stat = "identity", width = 0.25, colour = "red")
 
 #Conclusion: No fixed hours for app to request user to rate 'mood'
 # Also: Not many users used the app at "Dawn"
@@ -56,16 +51,32 @@ aggMood <- moodData[, .(id ,value.mood, date)]
 aggMood <- moodData[, .(mood_count = .N, mood_mean = mean(value.mood)), 
                     by = .(id, date)]
 
-#Visualise
-#TODO (track mood per user over time)
+###### Visualise
+### (track mood per user over time)
 
-#average mood per user
+aggMoodHr <- data.frame(moodData[, .(id, value.mood, hour)])
+aggMoodHr <- aggregate(x = aggMoodHr$value.mood, 
+                       by = aggMoodHr[c("id", "hour")], FUN = mean )
+colnames(aggMoodHr)[3] <- "mood_mean"
+
+# avg mood vs. each hour
+ggplot(data=aggMoodHr, aes(x=hour, y=id, colour=mood_mean)) +  
+        scale_color_continuous(low = "blue", high = "green") + geom_point()
+
+# avg mood vs. each day
+ggplot(aggMood, aes(x = id, y = date), label_size = 1.5) +
+        geom_bar(stat = "identity", aes(fill = mood_mean), width = 0.5,
+                 position = "stack") +
+        theme_bw()
+
+# average mood per user
 idMood <- aggMood[, .(mood_mean = mean(mood_mean)), 
                   by = .(id)]
 
 idMood$id <- unlist(lapply(idMood$id, FUN = function(x) as.numeric(sub("AS14.", "", x))))
 ggplot(data = idMood, mapping = aes(x = id, y = mood_mean)) +
-        geom_point(shape = 19)
+        geom_line() +
+        geom_point(size =2, shape=19, fill = "black", colour = "black")
 ######################################
 
 
