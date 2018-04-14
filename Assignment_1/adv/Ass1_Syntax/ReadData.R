@@ -8,6 +8,8 @@
 #Load packages
 library(data.table)
 library(lubridate)
+library(ggplot2)
+library(GGally)
 ######################################
 
 
@@ -64,12 +66,12 @@ newdata$time.of.day[newdata$hour > 18 & newdata$hour <= 24] <- "evening"
 newdata$week.day <- weekdays(newdata$date)
 ######################################
 
-
 ######################################
 #Sort by id and date
 newdata <- newdata[order(id, converted.time),]
 ######################################
 
-
-
-
+#Add nth day into newdata (column)
+min_day <- as.numeric(min(newdata$date))
+newdata$nth_day <- as.numeric(unlist(lapply(X = as.numeric(newdata$date), FUN = function(x) x+1-min_day)))
+rm(min_day)
