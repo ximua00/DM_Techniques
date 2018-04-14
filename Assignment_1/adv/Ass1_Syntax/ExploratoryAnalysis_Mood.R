@@ -18,6 +18,7 @@ ggplot(DaysPerID, aes(x=ID, y=Days)) +
         geom_line() +
         geom_point(size =2, shape=19, fill = "black", colour = "black")
 #Conclusion: Each ID conducts the experiment for a different number of days
+# rm(DaysPerID)
 ######################################
 
 
@@ -35,6 +36,8 @@ ggplot(ToDHours, aes(x = Time_of_Day, y = Total_Hours)) +
 
 #Conclusion: No fixed hours for app to request user to rate 'mood'
 # Also: Not many users used the app at "Dawn"
+
+# rm(ToDHours)
 ######################################
 
 
@@ -46,9 +49,9 @@ head(moodData$value.mood, n=10)
 
 ##Aggregate mood per day
 #Choose relevant variables
-aggMood <- moodData[, .(id ,value.mood, date)]
+aggMood <- moodData[, .(id ,value.mood, date, nth_day)]
 #Aggregate by id and day with #count
-aggMood <- moodData[, .(mood_count = .N, mood_mean = mean(value.mood)), 
+aggMood <- moodData[, .(mood_count = .N, mood_mean = mean(value.mood), nth_day), 
                     by = .(id, date)]
 
 ###### Visualise
@@ -61,13 +64,26 @@ colnames(aggMoodHr)[3] <- "mood_mean"
 
 # avg mood vs. each hour
 ggplot(data=aggMoodHr, aes(x=hour, y=id, colour=mood_mean)) +  
-        scale_color_continuous(low = "blue", high = "green") + geom_point()
+        scale_color_continuous(low = "blue", high = "green") + geom_point() +
+        theme_bw()
+
+# rm(aggMoodHr)
 
 # avg mood vs. each day
-ggplot(aggMood, aes(x = id, y = date), label_size = 1.5) +
+temp <- aggMood[aggMood$id=="AS14.01",]
+
+# For all IDs
+ggplot(aggMood, aes(y = nth_day, x = id)) +
         geom_bar(stat = "identity", aes(fill = mood_mean), width = 0.5,
-                 position = "stack") +
+                 position = "dodge")
         theme_bw()
+
+# For one id, say AS14.01 
+ggplot(temp, aes(y = nth_day, x = id, colour = mood_mean)) +
+        geom_jitter(aes(fill = mood_mean))
+        theme_bw()
+
+# rm(temp)        
 
 # average mood per user
 idMood <- aggMood[, .(mood_mean = mean(mood_mean)), 
@@ -77,11 +93,12 @@ idMood$id <- unlist(lapply(idMood$id, FUN = function(x) as.numeric(sub("AS14.", 
 ggplot(data = idMood, mapping = aes(x = id, y = mood_mean)) +
         geom_line() +
         geom_point(size =2, shape=19, fill = "black", colour = "black")
+
+# rm(idMood)
 ######################################
-
-
 
 ######################################
 #Total number of days the dataset was collected
 max(moodData$date) - min(moodData$date)
 ######################################
+

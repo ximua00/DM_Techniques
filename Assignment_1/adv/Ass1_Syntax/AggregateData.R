@@ -105,10 +105,18 @@ aggData = newdata[, .(count = .N,
 ######################################
 # Include more interesting variables
 
+validData <- subset(aggData, (!is.nan(aggData[, aggData$agg_mood])))
+
 # Add weekday
 aggData$weekday <- weekdays(aggData$date)
 
 # Count number of different applications used per day
+# temp <- aggData[aggData$id == "AS14.17"]
+
+# Columns from 11-22 store app data
+validData$open_count <- validData[,apply(X = validData[, 11:22], MARGIN = 1, FUN = function(x) sum(!is.nan(x)))]
+
+
 # aggData[,`:=` (different_apps = apply(.SD, 1, unique)),
 #           by = .(id, date), 
 #           .SDcols = c("agg_builtin", "agg_communication", "agg_entertainment", "agg_finance", "agg_game",
