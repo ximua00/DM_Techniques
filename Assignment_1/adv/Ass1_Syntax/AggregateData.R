@@ -10,6 +10,18 @@
 
 
 ######################################
+#Install packages, if not available
+install.packages("zoo")
+######################################
+
+######################################
+#Load package
+library(zoo)
+######################################
+
+
+
+######################################
 # Create variables number of times each
 # application was open throughout the day (use the sum in aggregation to get this value). 
 newdata$count_value.appCat.builtin <- ifelse(is.na(newdata$value.appCat.builtin) == FALSE,
@@ -103,28 +115,37 @@ aggData = newdata[, .(count = .N,
                   by = .(id, date)]
 
 ######################################
-# Include more interesting variables
-
-validData <- subset(aggData, (!is.nan(aggData[, aggData$agg_mood])))
-
+# Include other more interesting variables
 # Add weekday
 aggData$weekday <- weekdays(aggData$date)
 
 # Count number of different applications used per day
-# temp <- aggData[aggData$id == "AS14.17"]
-
-# Columns from 11-22 store app data
-validData$open_count <- validData[,apply(X = validData[, 11:22], MARGIN = 1, FUN = function(x) sum(!is.nan(x)))]
-
-
-# aggData[,`:=` (different_apps = apply(.SD, 1, unique)),
-#           by = .(id, date), 
-#           .SDcols = c("agg_builtin", "agg_communication", "agg_entertainment", "agg_finance", "agg_game",
-#                       "agg_office", "agg_other", "agg_social", "agg_travel", "agg_unknown", "agg_utilities", 
-#                       "agg_weather")]
-
+aggData$open_count <- aggData[,apply(X = aggData[, 11:22], MARGIN = 1, FUN = function(x) sum(!is.nan(x)))]
 ######################################
 
-ggcorr(data = aggData, label = TRUE, label_alpha = TRUE, label_size = 2.5, label_round = 2, 
-       hjust = 1, size = 3)
 
+
+######################################
+#Exclude data with missing Mood
+PreData <- subset(aggData, (!is.nan(aggData[, aggData$agg_mood]) | !is.nan(aggData[, aggData$agg_screen]) ))
+######################################
+
+
+######################################
+#Interpolate missing values for mood, arousal and valence
+PreData$interp_mood <- na.approx(PreData$agg_mood, na.rm = FALSE)
+PreData$interp_arousal <- na.approx(PreData$agg_arousal, na.rm = FALSE)
+PreData$interp_valence <- na.approx(PreData$agg_valence, na.rm = FALSE)
+
+#remove non interpolated variables
+PreData$agg_mood <- NULL
+PreData$agg_arousal <- NULL
+PreData$agg_valence <- NULL
+######################################
+
+
+######################################
+#Visualise correlations
+ggcorr(data = PreData, label = TRUE, label_alpha = TRUE, label_size = 2.5, label_round = 2, 
+       hjust = 1, size = 3)
+######################################
