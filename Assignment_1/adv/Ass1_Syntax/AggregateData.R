@@ -11,11 +11,7 @@
 
 ######################################
 #Install packages, if not available
-<<<<<<< HEAD
 #install.packages("zoo")
-=======
-# install.packages("zoo")
->>>>>>> a8a5d98c3c3f84cf10bafbe5fbdbde5e98110ca2
 ######################################
 
 ######################################

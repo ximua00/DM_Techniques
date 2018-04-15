@@ -208,7 +208,6 @@ forecast_ARIMA_manual <- function(trainData, testData) {
 ##########################################################
 
 ##########################################################
-
 Performance <- function(actual, predicted){
   #Function checks if predicted value is within a certain boundary.
   #if it within the boundary its a one, if not, its a zero.
@@ -225,5 +224,6 @@ Performance <- function(actual, predicted){
   
 }
 
+##########################################################
 
 

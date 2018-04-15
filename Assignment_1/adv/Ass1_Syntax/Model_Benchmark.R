@@ -36,7 +36,7 @@ MoodBench$lag.mood <- MoodBench[, .(lag.mood =  shift(interp_mood)), by = id][, 
 #BENCHMARK MODEL 2 - Predict mood of next day by taking 
 #the average for the previous 7 days.
 # Create temporary variables
-MoodBench$lag.mood1 <- MoodBench[, .(lag.mood =  shift(interp_mood, n = 1)), 
+MoodBench <- MoodBench[, .(lag.mood =  shift(interp_mood, n = 1)), 
                                    by = id][, 2]
 MoodBench$lag.mood2 <- MoodBench[, .(lag.mood =  shift(interp_mood, n = 2)),
                                    by = id][, 2] 
