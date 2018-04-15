@@ -11,7 +11,7 @@
 
 ######################################
 #Install packages, if not available
-install.packages("zoo")
+# install.packages("zoo")
 ######################################
 
 ######################################
@@ -146,6 +146,6 @@ PreData$agg_valence <- NULL
 
 ######################################
 #Visualise correlations
-ggcorr(data = PreData, label = TRUE, label_alpha = TRUE, label_size = 2.5, label_round = 2, 
-       hjust = 1, size = 3)
+ggcorr(data = PreData, label = TRUE, label_alpha = TRUE, label_size = 2.3, label_round = 2, 
+       hjust = 0.9, size = 3)
 ######################################
