@@ -3,7 +3,6 @@
 #make sure that moodData is loaded in environment - from ExploratoryAnalysis_Mood.R
 ######################################
 
-
 ######################################
 #Install packages, if not available
 # install.packages("ModelMetrics")
@@ -12,6 +11,11 @@
 ######################################
 #Load packages
 library(ModelMetrics)
+######################################
+
+######################################
+#Load helper functions
+source("./Helper_Functions.R")
 ######################################
 
 

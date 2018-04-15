@@ -56,3 +56,171 @@ splitdata_id <- function (dataset) {
   return(list(datasetTrain, datasetValid, datasetTest ))
   
 }
+
+
+
+##########################################################
+
+
+forecast_ARIMA_auto <- function(trainData, testData) {
+  #function trains a time series model per ID 
+  #INPUT: training dataset 
+  #Output: Test dataset with extra column with predicted values
+  
+  #initialise c() with forecasted data
+  finalForecast <- c()
+  totalDays <- 0 
+  
+  for (user_id in unique(trainData$id)) {
+    
+    #Subset user data
+    dfUser <- trainData[which(trainData$id == user_id), c("date", "interp_mood")]
+    
+    #Create a time series frame
+    dfUser <- ts(data =  as.data.frame(dfUser), start = c(1))
+    
+    #Create ARIMA model
+    model <- auto.arima(dfUser[, 2])
+    
+    #Get test data for specific user
+    dfUserTest <- testData[which(testData$id == user_id), c("interp_mood")]
+    
+    #Define how many forecast point necessary
+    f_days <- dim(dfUserTest)[1]
+    totalDays <- totalDays + f_days
+    
+    #
+    print (paste("Forecasting for ID", user_id, "for",  f_days, "days"))
+    #
+    
+    #Forecast model for length of test data (f_days)
+    forecastModel <- forecast(object = model, h = f_days)
+    
+    #unpack forecasts
+    temp <- c()
+    for (i in c(1:length(as.numeric(forecastModel$mean)))) {
+      temp <- rbind(temp, as.numeric(forecastModel$mean)[[i]])
+    }
+    
+    #Concatenate forecast to finalForecast
+    finalForecast <- rbind(finalForecast, temp)
+    
+  }
+  
+  #Append new forecasted values to testData
+  testData$forecast_mood <- finalForecast
+  
+  #
+  print(paste("Total forecasted days across all IDs", totalDays))
+  #
+  
+  return(testData)
+}
+
+
+##########################################################
+
+##########################################################
+
+
+forecast_ARIMA_manual <- function(trainData, testData) {
+  #function trains a time series model per ID 
+  #INPUT: training dataset 
+  #Output: Test dataset with extra column with predicted values
+  
+  #initialise c() with forecasted data
+  finalForecast <- c()
+  totalDays <- 0 
+  
+  for (user_id in unique(trainData$id)) {
+    
+    #Subset user data
+    dfUser <- trainData[which(trainData$id == user_id), c("date", "interp_mood")]
+    
+    #Create a time series frame
+    dfUser <- ts(data =  as.data.frame(dfUser), start = c(1))
+    
+    #run ARIMA iterations model
+    bestAIC <- 99999999
+    
+    for(p in 0:2){
+      for(d in 0:1){
+        for(q in 0:2){
+          
+          #run ARIMA
+          model <- arima(dfUser[, 2], order = c(p,d,q), method="ML") 
+          tempAIC <- model$aic
+          
+          #pick best model by checking low AIC
+          if (tempAIC < bestAIC)
+          {
+            bestAIC <- tempAIC
+            bestModel <- model
+            
+            
+          }
+          
+        }
+      }
+    }
+    
+    #print (bestModel)
+    
+    #Get test data for specific user
+    dfUserTest <- testData[which(testData$id == user_id), c("interp_mood")]
+    
+    #Define how many forecast point necessary
+    f_days <- dim(dfUserTest)[1]
+    totalDays <- totalDays + f_days
+    
+    #
+    print (paste("Forecasting for ID", user_id, "for",  f_days, "days"))
+    #
+    
+    #Forecast BestModel for length of test data (f_days)
+    forecastModel <- forecast(object = bestModel, h = f_days)
+    
+    #unpack forecasts
+    temp <- c()
+    for (i in c(1:length(as.numeric(forecastModel$mean)))) {
+      temp <- rbind(temp, as.numeric(forecastModel$mean)[[i]])
+    }
+    
+    #Concatenate forecast to finalForecast
+    finalForecast <- rbind(finalForecast, temp)
+    
+  }
+  
+  #Append new forecasted values to testData
+  testData$forecast_mood <- finalForecast
+  
+  #
+  print(paste("Total forecasted days across all IDs", totalDays))
+  #
+  
+  return(testData)
+}
+
+
+##########################################################
+
+##########################################################
+
+Performance <- function(actual, predicted){
+  #Function checks if predicted value is within a certain boundary.
+  #if it is sums a one, if not, its a zero.
+  
+  boundary <- 0.25
+  
+  temp <- (actual- predicted)^2
+  
+  accurate <- ifelse(temp <= boundary,
+                     accurate <- 1, 
+                     accurate <- 0)
+
+  return(sum(accurate) / length(accurate))
+  
+}
+
+
+
