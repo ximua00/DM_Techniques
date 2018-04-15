@@ -11,7 +11,7 @@
 
 ######################################
 #Install packages, if not available
-install.packages("zoo")
+#install.packages("zoo")
 ######################################
 
 ######################################
@@ -149,3 +149,12 @@ PreData$agg_valence <- NULL
 ggcorr(data = PreData, label = TRUE, label_alpha = TRUE, label_size = 2.5, label_round = 2, 
        hjust = 1, size = 3)
 ######################################
+
+
+######################################
+rm(Mood, aggData, newdata)
+######################################
+
+
+
+

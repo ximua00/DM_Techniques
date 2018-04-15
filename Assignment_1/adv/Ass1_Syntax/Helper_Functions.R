@@ -2,7 +2,10 @@
 # HELPER FUNCTIONS
 
 #This syntax: 
-# - defines a function for splitting the data based on ID (ordered)
+# - splitdata_id - function for splitting the data based on ID (ordered)
+# - forecast_ARIMA_auto - function for ARIMA automatica selection of parameters
+# - forecast_ARIMA_manual - function for ARIMA automatica selection of parameters
+# - Performance - function for evaluating model
 ######################################
 
 
@@ -18,7 +21,7 @@ splitdata_id <- function (dataset) {
   datasetTest <- c()
   
   #For each user 
-  for (user_id in unique(aggData$id)) {
+  for (user_id in unique(dataset$id)) {
   
     #Create temporary dataset
     df <- dataset[which(dataset$id == user_id), ]
@@ -208,13 +211,13 @@ forecast_ARIMA_manual <- function(trainData, testData) {
 
 Performance <- function(actual, predicted){
   #Function checks if predicted value is within a certain boundary.
-  #if it is sums a one, if not, its a zero.
+  #if it within the boundary its a one, if not, its a zero.
   
-  boundary <- 0.25
+  boundary <- 0.5
   
   temp <- (actual- predicted)^2
   
-  accurate <- ifelse(temp <= boundary,
+  accurate <- ifelse(temp <= boundary^2,
                      accurate <- 1, 
                      accurate <- 0)
 
