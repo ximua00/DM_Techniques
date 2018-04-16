@@ -1,6 +1,6 @@
 ######################################
 # PREPROCESS DATA FOR MODELLING
-# (make sure that PreData is in environment - from AggregateData.R)
+# (make sure that PreData is in environment - from ReadData.R)
 
 #This syntax: 
 # - Deletes correlated variables
@@ -122,6 +122,9 @@ PreData_df$weekday <- NULL
 #Delete one dummy to avoid multicollinearity
 PreData_df$dummy_Monday <- NULL
 ######################################
+# doing an experiment on linear regression per user 
+experiment <- PreData_df
+
 # discard all dummies except saturday, keep the rest of vars
 keeps = c("id", "date", "agg_activity", "interp_valence", "interp_mood", "interp_arousal", "agg_utilities", "agg_count_entertainment", "agg_count_office", "dummy_Saturday")
 PreData_df = PreData_df[keeps]

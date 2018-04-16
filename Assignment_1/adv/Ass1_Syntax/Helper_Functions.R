@@ -207,7 +207,45 @@ forecast_ARIMA_manual <- function(trainData, testData) {
 
 ##########################################################
 
+
+linearRegression_perID <- function (trainData, testData) {
+        # function trains a model per ID
+        # i/p: training dataset
+        # o/p: test dataset + column with predicted values
+predicts <- c()
+for (user_id in unique(trainData$id)) {
+
+        dfUser <- trainData[which(trainData$id == user_id), ]
+        dfUser_test <- testData[which(testData$id == user_id), ]
+        dfUser$id <- NULL
+        # create a linear regression model
+        lm_Model <- lm(formula = interp_mood ~ dummy_Saturday+interp_valence, data = dfUser)
+        
+        predictMood <- predict(lm_Model, dfUser_test)
+        
+        predicts <- rbind(predicts, predictMood)
+
+        r <- rmse(actual = dfUser_test$interp_mood, predicted = predictMood)
+        p <- Performance(actual = dfUser_test$interp_mood, predicted = predictMood)
+        
+        # print statistics per user
+        print(paste("Linear Regressing statistics ID ", user_id, " --- RMSE ", r, " & Performance ", p))
+}
+
+# TODO: for some weird reason only 216/223 test set values get predicted. wonder why 
+predicts <- as.vector(t(predicts))
+
+testData$predicted_mood <- predicts
+
+return(testData)
+}
+
+
 ##########################################################
+
+##########################################################
+
+
 Performance <- function(actual, predicted){
   #Function checks if predicted value is within a certain boundary.
   #if it within the boundary its a one, if not, its a zero.
