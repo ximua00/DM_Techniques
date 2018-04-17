@@ -14,7 +14,6 @@
 source("./Helper_Functions.R")
 ######################################
 
-pls = PreData
 
 ######################################
 # Delete Highly correlated Variables
@@ -78,6 +77,17 @@ PreData = PreData[, keeps, with = FALSE]
 # PreData$lag_open_count = PreData[, .(lag_open_count = shift(open_count)), by = id][, 2]
 # 
 # 
+######################################
+
+######################################
+# Create MA variables
+# Delete the unwanted variables in CreateMovingAverages.R
+source("./CreateMovingAverages.R")
+######################################
+
+
+
+######################################
 # #Delete unnecessary (current t) variables
 # PreData$agg_screen <- NULL
 # PreData$agg_communication <- NULL
@@ -122,36 +132,17 @@ PreData_df$weekday <- NULL
 #Delete one dummy to avoid multicollinearity
 PreData_df$dummy_Monday <- NULL
 ######################################
+
+
+
+######################################
 # doing an experiment on linear regression per user 
 experiment <- PreData_df
 
 # discard all dummies except saturday, keep the rest of vars
 keeps = c("id", "date", "agg_activity", "interp_valence", "interp_mood", "interp_arousal", "agg_utilities", "agg_count_entertainment", "agg_count_office", "dummy_Saturday")
 PreData_df = PreData_df[keeps]
-
-
-# ######################################
-# # create lag variables of given history(number of days to look back into the past)
-# histories = list(1, 2, 5, 7)
-# 
-# for(name in names(PreData_df)) {
-# 
-#   # do not create lag vars for these columns
-#   if(name == "id" | name == "date" | name == "count") {
-#     print(paste("Skipping", name, sep = " "))
-#     next
-#   }
-# 
-#   for(history in histories) {
-#     new_name = paste("meanlag", name, history, sep = "_")
-# 
-#     # TODO/NOTE: this line gives an error, don't know how to fix yet: 
-#     #   - if I use PreData_df it's "unused argument (by = id)"
-#     #   - if I use PreData it's some other nonsense >{
-#     PreData_df[paste(new_name)] = PreData_df[, .(new_name = shift(name, n = history)), by = id][, 2]
-#   }
-# }
-# ######################################
+######################################
 
 
 

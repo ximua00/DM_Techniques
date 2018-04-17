@@ -212,32 +212,31 @@ linearRegression_perID <- function (trainData, testData) {
         # function trains a model per ID
         # i/p: training dataset
         # o/p: test dataset + column with predicted values
-predicts <- c()
-for (user_id in unique(trainData$id)) {
-
-        dfUser <- trainData[which(trainData$id == user_id), ]
-        dfUser_test <- testData[which(testData$id == user_id), ]
-        dfUser$id <- NULL
-        # create a linear regression model
-        lm_Model <- lm(formula = interp_mood ~ dummy_Saturday+interp_valence, data = dfUser)
-        
-        predictMood <- predict(lm_Model, dfUser_test)
-        
-        predicts <- rbind(predicts, predictMood)
-
-        r <- rmse(actual = dfUser_test$interp_mood, predicted = predictMood)
-        p <- Performance(actual = dfUser_test$interp_mood, predicted = predictMood)
-        
-        # print statistics per user
-        print(paste("Linear Regressing statistics ID ", user_id, " --- RMSE ", r, " & Performance ", p))
-}
-
-# TODO: for some weird reason only 216/223 test set values get predicted. wonder why 
-predicts <- as.vector(t(predicts))
-
-testData$predicted_mood <- predicts
-
-return(testData)
+  
+  predicts <- c()
+  
+  for (user_id in unique(trainData$id)) {
+  
+          dfUser <- trainData[which(trainData$id == user_id), ]
+          dfUser_test <- testData[which(testData$id == user_id), ]
+          dfUser$id <- NULL
+          
+          # create a linear regression model
+          lm_Model <- lm(formula = interp_mood ~., data = dfUser)
+          predictMood <- predict(lm_Model, dfUser_test)
+          
+          #Concatenate prediction
+          predicts <- rbind(predicts, predictMood)
+  
+          
+  }
+  
+  # TODO: for some weird reason only 216/223 test set values get predicted. wonder why 
+  predicts <- as.vector(t(predicts))
+  
+  testData$predicted_RegressionUser <- predicts
+  
+  return(testData)
 }
 
 
@@ -264,4 +263,14 @@ Performance <- function(actual, predicted){
 
 ##########################################################
 
+##########################################################
 
+get.mav <- function(bp,n=2){
+  #Function to calculate MA
+  # from: https://stackoverflow.com/questions/26198551/rolling-mean-moving-average-by-group-id-with-dplyr
+  require(zoo)
+  if(is.na(bp[1])) bp[1] <- mean(bp,na.rm=TRUE)
+  bp <- na.locf(bp,na.rm=FALSE)
+  if(length(bp)<n) return(bp)
+  c(bp[1:(n-1)],rollapply(bp,width=n,mean,align="right"))  
+}
