@@ -264,13 +264,3 @@ Performance <- function(actual, predicted, b){
 ##########################################################
 
 ##########################################################
-
-get.mav <- function(bp,n=2){
-  #Function to calculate MA
-  # from: https://stackoverflow.com/questions/26198551/rolling-mean-moving-average-by-group-id-with-dplyr
-  require(zoo)
-  if(is.na(bp[1])) bp[1] <- mean(bp,na.rm=TRUE)
-  bp <- na.locf(bp,na.rm=FALSE)
-  if(length(bp)<n) return(bp)
-  c(bp[1:(n-1)],rollapply(bp,width=n,mean,align="right"))  
-}
