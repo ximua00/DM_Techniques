@@ -245,11 +245,11 @@ linearRegression_perID <- function (trainData, testData) {
 ##########################################################
 
 
-Performance <- function(actual, predicted){
+Performance <- function(actual, predicted, b){
   #Function checks if predicted value is within a certain boundary.
   #if it within the boundary its a one, if not, its a zero.
   
-  boundary <- 0.5
+  boundary <- b
   
   temp <- (actual- predicted)^2
   

@@ -124,32 +124,39 @@ PreData$interp_valence = NULL
 
 
 # ######################################
-# # Make Dummies for weekday
-# # PreData_df <- as.data.frame(PreData)
-# for(level in unique(PreData_df$weekday)){
-#   PreData[paste("dummy", level, sep = "_")] <- ifelse(PreData_df$weekday == level, 1, 0)
-# }
-# 
-# #Delete weekday
-# PreData_df$weekday <- NULL
-# 
-# #Delete one dummy to avoid multicollinearity
-# PreData_df$dummy_Monday <- NULL
+# Make Dummies for weekday
+PreData_df <- as.data.frame(PreData)
+for(level in unique(PreData_df$weekday)){
+  PreData_df[paste("dummy", level, sep = "_")] <- ifelse(PreData_df$weekday == level, 1, 0)
+}
+
+#Delete weekday
+PreData_df$weekday <- NULL
+
+#Delete one dummy to avoid multicollinearity
+PreData_df$dummy_Monday <- NULL
 # ######################################
+
 
 ##########################################
 # ALTERNATIVE TO DUMMIES - because they refuse to work for me 
-# convert saturdays to 1; all other days to 0
-func_saturday_only <- function (day) {
-  if(day == "Saturday")
-    return(1)
-  else
-    return(0)
 
-}
-PreData$saturday = lapply(PreData$weekday, func_saturday_only)
-PreData$weekday = NULL
-PreData$date = NULL # once we have weekday info, the date is useless right?
+# #Add Weekday as an integer
+# aggData$weekday = wday(aggData$date)
+
+# convert saturdays to 1; all other days to 0
+# func_saturday_only <- function (day) {
+#   if(day == "Saturday")
+#     return(1)
+#   else
+#     return(0)
+# 
+# }
+# PreData$saturday = lapply(PreData$weekday, func_saturday_only)
+# # PreData$saturday = apply(PreData, MARGIN=2, FUN=func_saturday_only)
+# PreData$weekday = NULL
+# PreData$date = NULL # once we have weekday info, the date is useless right?
+
 # # for time series regression: lag saturday by 1 day: if the day we predict would be saturday, we want to tell it to the model by having the previous day marked with '1'
 # # PreData_df$lag_saturday <- PreData_df[,.(ma2 = as.numeric(get.mav(agg__count_office, n = 1))), by = id] [, 2]
 ##########################################
