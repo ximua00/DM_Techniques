@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "##########################\n#KISHAN's MAIN\n#Regression for all users\n##########################\n\n######################################\n#Load helper functions\nsource(\"./Helper_Functions.R\")\n######################################\n\n##########################\n#Call other syntaxes\n# 1: Load and aggregate data\nsource(\"./ReadData.R\")\n\n# 2: Preprocess data for Regression\nsource(\"./Regression_Preprocessing.R\")\n##########################\nPreData_df$date <- NULL\n\nloopnames <- names(PreData_df)\nPreData_df <- Transformations(PreData_df, loopnames)\n#PreData_df <- CoTransformations(PreData_df, loopnames)\n\n##########################\n#Get Evaluation datasets\nSplitData <- splitdata_id(PreData_df)\ntrainingSet <- SplitData[[1]]\nvalidationSet <- SplitData[[2]]\ntestingSet <- SplitData[[3]]\n##########################\n\n##########################\n#Prepare data for modelling\n#1: Delete useless variables\ntrainingSet$id <- NULL\ntestingSet$id <- NULL\nvalidationSet$id <- NULL\ntrainingSet$date <- NULL\ntestingSet$date <- NULL\nvalidationSet$date <- NULL\n\n#2: remove y variable \nvalid_x = subset(validationSet, select = -interp_mood)\nvalid_y = validationSet$interp_mood\ntest_x = subset(testingSet, select = -interp_mood)\ntest_y = testingSet$interp_mood\n##########################\n\n\n##########################\n#Linear regression per variable and save accuracy - for variable selection\n#(Single Factor Analysis)\nResultsSingleFactor <- RegressionPerVariable(trainingSet)\n##########################\n\n\n##########################\n#Regression for all users - based on results from Single Factor\n#3: Train Model\nmodel = lm(interp_mood ~ ma7_interp_mood,\n             data = trainingSet)\nsummary(model)\n\n#3.1: run step model\nmodel = step(model)\n\n#4: Predict on validation data\npred = predict(model, valid_x)\n\n#5.1: Evaluate Model metrics on Validation\nrmse(actual = valid_y, predicted = pred)\nPerformance(actual =  valid_y, predicted = pred, 0.5)\n\n#5.2: Evaluate Model metrics on Test\npred = predict(model, test_x)\nrmse(actual = test_y, predicted = pred)\nPerformance(test_y, pred, 0.5)\n##########################\n\n\n##########################\n#SVM for all users - based on same Single Factor Analysis\n#1: Train SVM\nmodel = svm(interp_mood ~  ma7_interp_mood + ma2_interp_mood + ma7_interp_valence + lag_mood\n            , data = trainingSet)\n\n#4: Predict on validation data\npred = predict(model, valid_x)\nrmse(actual = valid_y, predicted = pred)\nPerformance(actual =  valid_y, predicted = pred, 0.5)\n\n#5: Evaluate Model metrics on Test\npred = predict(model, test_x)\nrmse(actual = test_y, predicted = pred)\nPerformance(test_y, pred, 0.5)\n##########################\n\n\n##########################\n\n##########################\n#Run Regression Model per user\n#Get Evaluation datasets\n\n\n\nIRSplitData <- splitdata_id(PreData_df)\ntrainingSet <- SplitData[[1]]\nvalidationSet <- SplitData[[2]]\ntestingSet <- SplitData[[3]]\n\n\n\n#Run model per user VALIDATION SET\ntemp <- linearRegression_perID(trainingSet, validationSet)\nrmse(actual = temp$interp_mood, predicted = temp$predicted_RegressionUser)\nPerformance(actual = temp$interp_mood, predicted = temp$predicted_RegressionUser, 0.5)\n\n\n#Run model per user TEST SET\ntemp <- linearRegression_perID(trainingSet, testingSet)\nrmse(actual = temp$interp_mood, predicted = temp$predicted_RegressionUser)\nPerformance(actual = temp$interp_mood, predicted = temp$predicted_RegressionUser, 0.5)\n\n\n",
+    "created" : 1524085274022.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1900699878",
+    "id" : "76AB6685",
+    "lastKnownWriteTime" : 1524142446,
+    "last_content_update" : 1524142446132,
+    "path" : "~/Desktop/Data Mining Techniques/DM_Techniques/Assignment_1/adv/Ass1_Syntax/kishans_main.R",
+    "project_path" : "kishans_main.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

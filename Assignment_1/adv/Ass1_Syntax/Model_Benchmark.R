@@ -83,15 +83,15 @@ testData <- SplitData[[3]]
 #Compare using for 4 benchmark models
 #RMSE
 rmse(actual = testData$interp_mood, predicted = testData$lag.mood)
-rmse(actual = testData$interp_mood, predicted = testData$mean.2.previousdays)
-rmse(actual = testData$interp_mood, predicted = testData$mean.5.previousdays)
-rmse(actual = testData$interp_mood, predicted = testData$mean.7.previousdays)
+# rmse(actual = testData$interp_mood, predicted = testData$mean.2.previousdays)
+# rmse(actual = testData$interp_mood, predicted = testData$mean.5.previousdays)
+# rmse(actual = testData$interp_mood, predicted = testData$mean.7.previousdays)
 
 #Performance
-Performance(actual = testData$interp_mood, predicted = testData$lag.mood)
-Performance(actual = testData$interp_mood, predicted = testData$mean.2.previousdays)
-Performance(actual = testData$interp_mood, predicted = testData$mean.5.previousdays)
-Performance(actual = testData$interp_mood, predicted = testData$mean.7.previousdays)
+Performance(actual = testData$interp_mood, predicted = testData$lag.mood, 0.5)
+# Performance(actual = testData$interp_mood, predicted = testData$mean.2.previousdays, 0.5)
+# Performance(actual = testData$interp_mood, predicted = testData$mean.5.previousdays, 0.5)
+# Performance(actual = testData$interp_mood, predicted = testData$mean.7.previousdays, 0.5)
 ######################################
 
 

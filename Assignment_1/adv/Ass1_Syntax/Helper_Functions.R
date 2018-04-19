@@ -64,6 +64,8 @@ splitdata_id <- function (dataset) {
 
 ##########################################################
 
+##########################################################
+
 
 forecast_ARIMA_auto <- function(trainData, testData) {
   #function trains a time series model per ID 
@@ -214,24 +216,38 @@ linearRegression_perID <- function (trainData, testData) {
         # o/p: test dataset + column with predicted values
   
   predicts <- c()
-  
+  print("Hello")
   for (user_id in unique(trainData$id)) {
   
+          print (user_id)
           dfUser <- trainData[which(trainData$id == user_id), ]
           dfUser_test <- testData[which(testData$id == user_id), ]
           dfUser$id <- NULL
           
+          
+          dfUser_test_x = subset(dfUser_test, select = -c(interp_mood, id))
+          #dfUser_test_y = dfUser_test$interp_mood
+          
           # create a linear regression model
-          lm_Model <- lm(formula = interp_mood ~., data = dfUser)
-          predictMood <- predict(lm_Model, dfUser_test)
+          
+          dfUser <- na.omit(dfUser)
+          lm_Model <- lm(formula = interp_mood ~ ma7_interp_mood + ma2_interp_valence +
+                         lag_open_count + ma5_agg_call + lag_sms,
+                         data = dfUser)
+           
+          lm_Model <- step(lm_Model)
+          predictMood <- predict(lm_Model, dfUser_test_x)
+          
+          temp <- c()
+          for (i in c(1:length(as.numeric(predictMood)))) {
+            temp <- rbind(temp, as.numeric(predictMood)[[i]])
+          }
           
           #Concatenate prediction
-          predicts <- rbind(predicts, predictMood)
+          predicts <- rbind(predicts, temp)
   
-          
+        
   }
-  
-  # TODO: for some weird reason only 216/223 test set values get predicted. wonder why 
   predicts <- as.vector(t(predicts))
   
   testData$predicted_RegressionUser <- predicts
@@ -264,3 +280,101 @@ Performance <- function(actual, predicted, b){
 ##########################################################
 
 ##########################################################
+
+RegressionPerVariable <- function(trainingSet){
+  
+  #initialise return data frame
+  RegressionPerVariable <- c()
+  
+  for (variable in names(trainingSet)){
+    
+    print (variable)
+    
+    #skip mood variable - duh
+    if (variable == "interp_mood"){next}
+    
+    #3: Train Model
+    formula = as.formula(paste("interp_mood ~ ", variable))
+    model = lm(formula, data = trainingSet)
+    
+    #4: Predict on validation data
+    pred = predict(model, valid_x)
+    
+    #5.1: Evaluate Model metrics on Validation
+    temp_rmse <- rmse(actual = valid_y, predicted = pred)
+    temp_performance <- Performance(actual = valid_y, predicted = pred, 0.5)
+    
+    
+    
+    
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # #SVM MODEL
+    # formula = as.formula(paste("interp_mood ~ ", variable))
+    # model = svm(formula, data = trainingSet)
+    # 
+    # #4: Predict on validation data
+    # pred = predict(model, valid_x)
+    # 
+    # #5.1: Evaluate Model metrics on Validation
+    # svm_temp_rmse <- rmse(actual = valid_y, predicted = pred)
+    # svm_temp_performance <- Performance(actual = valid_y, predicted = pred, 0.5)
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    
+    #temp_modelMetrics <- cbind(variable, temp_rmse, temp_performance, svm_temp_rmse, svm_temp_performance )
+    temp_modelMetrics <- cbind(variable, temp_rmse, temp_performance)
+    RegressionPerVariable <- rbind(RegressionPerVariable, temp_modelMetrics)
+  }
+  
+  return(as.data.frame(RegressionPerVariable))
+}
+
+##########################################################
+
+
+
+
+Transformations <-function(trainingSet, loopnames) {
+  for (variable in loopnames){
+    if (variable == "id") {next}
+    if (variable == "interp_mood") {next}
+    
+    print(variable)
+    
+    trainingSet[paste(variable, "_squared", sep = "")] <- trainingSet[variable]**2 
+    trainingSet[paste(variable, "_cubed", sep = "")] <- trainingSet[variable]**3 
+    #trainingSet[paste(variable, "_log", sep = "")] <- log(trainingSet[variable])
+    
+  }
+  return(trainingSet)
+}
+
+
+CoTransformations <-function(trainingSet, loopnames) {
+  
+  for (variable in loopnames){
+    
+    if (variable == "id") {next}
+    if (variable == "interp_mood") {next}
+    if (variable == "lag_mood") {next}
+    if (variable == "ma2_interp_mood") {next}
+    if (variable == "ma5_interp_mood") {next}
+    if (variable == "ma7_interp_mood") {next}
+    
+    print(variable)
+    
+    for (variable2 in loopnames){
+      if (variable2 == "id") {next}
+      if (variable2 == "interp_mood") {next}
+      if (variable == "ma2_interp_mood") {next}
+      if (variable == "ma5_interp_mood") {next}
+      if (variable == "ma7_interp_mood") {next}
+      
+      print(paste(variable, variable2))
+      #trainingSet[paste(variable, "_", variable2, "_sum", sep = "" )] <- trainingSet[variable] + trainingSet[variable2]
+      trainingSet[paste(variable, "_", variable2, "_multiply", sep = "" )] <- trainingSet[variable] * trainingSet[variable2]
+      #trainingSet[paste(variable, "_", variable2, "_ratio", sep = "" )] <- trainingSet[variable] / trainingSet[variable2]
+      
+    }
+  }
+  return(trainingSet)
+}
