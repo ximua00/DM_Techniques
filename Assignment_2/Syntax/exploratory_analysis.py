@@ -47,7 +47,7 @@ for key, item in grouped:
         else:
             booked_counts[index.item()] = 1
 
-    clicked_indices = np.where(group['booking_bool'] == 1)
+    clicked_indices = np.where(group['click_bool'] == 1)
     for index in clicked_indices[0]:
         if index in clicked_counts:
             clicked_counts[index.item()] += 1
