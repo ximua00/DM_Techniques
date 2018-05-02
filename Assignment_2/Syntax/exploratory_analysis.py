@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 # NOTE: replace the path with your own if it's different
 
 # data_path = os.path.join('data', 'test.csv')
-data_path = os.path.join('data', 'training_set_VU_DM_2014.csv')
-df = pd.read_csv(data_path)
+#data_path = os.path.join('data', 'training_set_VU_DM_2014.csv')
+df = pd.read_csv('../Data/training_set_VU_DM_2014.csv')
 
 ######################################
 #   Number of uniques in the dataset - hotels, sites etc.
