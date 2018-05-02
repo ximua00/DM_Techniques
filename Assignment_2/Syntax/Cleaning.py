@@ -36,16 +36,19 @@ df2.plot.barh()
 
 
 # ------- removing entries where the "user" country is same as the "hotel" country
-index = []
-# subset1 = df[['visitor_location_country_id', 'prop_country_id']]
-temp = df.groupby(['visitor_location_country_id', 'prop_country_id']).nunique()
-dummy = df.groupby(by = ['visitor_location_country_id', 'prop_country_id']).groups
+# NOTE: This method can't be used. neglect it --------
 
-for visitor, prop in dummy:
-    if visitor == prop:
-        index.append(visitor)
-
-df = temp.drop(index, axis = 0)
-# df.to_csv('training_mod1.csv', sep = '\t', encoding = 'utf-8')
 # The data set has reduced drastically to only 514 rows. I'm not sure if this
-# approach is correct. There might be some errors. TODO: Need to discuss
+# approach is correct. There might be some errors.
+
+# index = []
+# subset1 = df[['visitor_location_country_id', 'prop_country_id']]
+# temp = df.groupby(['visitor_location_country_id', 'prop_country_id']).nunique()
+# dummy = df.groupby(by = ['visitor_location_country_id', 'prop_country_id']).groups
+#
+# for visitor, prop in dummy:
+#     if visitor == prop:
+#         index.append(visitor)
+#
+# df = temp.drop(index, axis = 0)
+# df.to_csv('training_mod1.csv', sep = '\t', encoding = 'utf-8')
