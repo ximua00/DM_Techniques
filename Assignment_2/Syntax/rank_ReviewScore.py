@@ -26,12 +26,14 @@ print ('Filled NAs {} \n'.format(validation_data['prop_review_score'].isnull().s
 
 
 #Per query sort by prop_review_score
+#validation_data.sort_values(by = ['srch_id', 'position'], ascending=[1, 1], inplace = True)
 validation_data.sort_values(by = ['srch_id', 'prop_review_score'], ascending=[1, 0], inplace = True)
 
 
 #Evaluate NDCG
-validation_data['score'] = validation_data['click_bool'] + 5*validation_data['booking_bool']
-validation_data['score'][validation_data['score'] > 5] = 5 
+validation_data['score'] = validation_data['click_bool'] + 4*validation_data['booking_bool']
+#validation_data['score'][validation_data['score'] > 5] = 5 
 
+print ('Evaluating {} ids...'.format(validation_data['srch_id'].nunique()))
 ndcg = evaluate(validation_data)
 print (ndcg)

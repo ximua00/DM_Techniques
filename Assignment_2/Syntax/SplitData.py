@@ -9,20 +9,17 @@ random.seed(9001)
 def Train_Validation_Split(train_data, validation_percentage = 0.15):
 	'''
 	Split data based on search id 
-	I: Pandas dataframe
+	I: Pandas dataframe to be split per srch_id
 	O: (train_data, validation_data)
 	'''
 	
 	#Split train and validation data based on search ID
 	print ('Number of missing values in column srch_id {} \n'.format(train_data['srch_id'].isnull().sum()))
-	max_search_id = train_data['srch_id'].max()
-	print ('Max search id {}'.format(max_search_id))
-
 
 	#Unique values in search ID 
 	unique_search_id = train_data['srch_id'].unique()
 	n_ids = unique_search_id.shape[0]
-	print ('Number of validation search ids:{} \n'.format(n_ids))
+	print ('Number of total search ids:{} \n'.format(n_ids))
 
 	#Randomly select id's for validation set
 	n_validation = np.floor(n_ids * validation_percentage).astype(int)

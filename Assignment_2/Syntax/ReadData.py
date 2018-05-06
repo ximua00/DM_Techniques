@@ -5,22 +5,26 @@ import time
 import pickle
 import SplitData
 
-#################################################################
+##################################################################
 # Load data
 start = time.time()
 train_data = pd.read_csv('../Data/training_set_VU_DM_2014.csv')
 print ("Time to read data = %.2fs " % (time.time() - start))
 
-#################################################################
+train_data, validation_data = SplitData.Train_Validation_Split(train_data)
+# #################################################################
 
-pickle.dump(train_data, open('../pickled_data/trainFullData.pkl', 'wb'))
+# pickle.dump(train_data, open('../pickled_data/trainFullData.pkl', 'wb'))
 
 
 #Load training data
-start = time.time()
-train_data = pickle.load(open('../pickled_data/trainFullData.pkl', 'rb'))
-print ("Time to read data = %.2fs " % (time.time() - start))
+#start = time.time()
+#train_data = pickle.load(open('../pickled_data/trainFullData.pkl', 'rb'))
+#print ("Time to read data = %.2fs " % (time.time() - start))
 
+
+pickle.dump(train_data, open('../pickled_data/train_data.pkl', 'wb'))
+pickle.dump(validation_data, open('../pickled_data/validation_data.pkl', 'wb'))
 
 # print (train_data.head())
 # #print (train_data.describe())

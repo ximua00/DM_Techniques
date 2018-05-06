@@ -90,7 +90,6 @@ def evaluate_ndcg(dataset, k = 38, method = 1):
 
         if iteration % verbosity_interval == 0 and iteration != 0:
             print("ITERATION %r, time=%.2fs" % (iteration, time.time() - start))
-            print (ndcg)
 
         ndcg_array = np.append(ndcg_array, ndcg)
 
