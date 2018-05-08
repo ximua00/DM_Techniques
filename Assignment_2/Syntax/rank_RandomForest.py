@@ -37,13 +37,48 @@ target = train_sample["booking_bool"].values
 print(features.shape)
 
 #TRAIN MODEL
-print("Training the Classifier...")
-classifier = RandomForestClassifier(n_estimators=10, 
+print("Training booking Classifier...")
+classifier = RandomForestClassifier(n_estimators=50, 
                                     verbose=2,
                                     n_jobs=1,
                                     min_samples_split=10,
                                     random_state=1)
 classifier.fit(features, target)
+
+
+
+
+
+
+
+train_sample = train_data
+
+#select variables for model
+feature_names = list(train_sample.columns)
+feature_names.remove("click_bool")
+feature_names.remove("booking_bool")
+feature_names.remove("gross_bookings_usd")
+feature_names.remove("date_time")
+feature_names.remove("position")
+
+features = train_sample[feature_names].values
+target = train_sample["click_bool"].values
+
+print(features.shape)
+
+#TRAIN MODEL
+print("Training click Classifier...")
+classifier_click = RandomForestClassifier(n_estimators=50, 
+                                    verbose=2,
+                                    n_jobs=1,
+                                    min_samples_split=10,
+                                    random_state=1)
+classifier_click.fit(features, target)
+
+
+
+
+
 
 
 #CLEAN TEST DATA
@@ -66,12 +101,20 @@ t_feature_names.remove("position")
 t_features = test_sample[t_feature_names].values
 t_target = test_sample["booking_bool"].values
 
-print("Making predictions")
+print("Making booking predictions")
 predictions = classifier.predict_proba(t_features)[:,1]
 
-test_sample['predictions'] = predictions
+test_sample['predictions_book'] = predictions
+
+
+print("Making clicking predictions")
+
+predictions = classifier_click.predict_proba(t_features)[:,1]
+
+test_sample['predictions_click'] = predictions
 
 #Sort data by predictions
+test_sample['predictions'] = test_sample['predictions_click'] + 4*test_sample['predictions_book']
 test_sample.sort_values(by = ['srch_id', 'predictions'], ascending=[1, 0], inplace = True)
 
 
