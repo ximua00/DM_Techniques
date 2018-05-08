@@ -1,6 +1,6 @@
 '''Random Forest model'''
 
-#TODO: Preprocessing, Hyperparameter tuning, include classifier
+#TODO: Preprocessing, Hyperparameter tuning
 
 import pandas as pd
 import numpy as np
