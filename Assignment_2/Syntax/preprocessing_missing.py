@@ -76,7 +76,7 @@ def preprocessing_missing(dataset, preprocess_flag = True):
 		dataset['orig_destination_distance'].fillna(method='bfill', inplace = True)
 
 		###############################################
-		dataset['Relevance'] = dataset.apply(relevance_grade, axis = 1)
+		dataset['score'] = dataset.apply(relevance_grade, axis = 1)
 
 		###############################################
 		# TODO: gross_bookings_usd

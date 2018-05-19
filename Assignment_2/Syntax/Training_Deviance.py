@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import GradientBoostingRegressor  #GBM algorithm
 from SplitData import Train_Validation_Split
 
-# Uncomment if raw data is passed instead of preprocessed data
 from preprocessing_missing import preprocessing_missing, composite_features, remove_variables
 
 matplotlib.rcParams.update({'font.size': 8})
@@ -23,11 +22,15 @@ with open('pickled_data/training_set.pickle', 'rb') as f:
 
 print ("Time to read data = %.2fs" % (time.time() - start))
 
+prep_time = time.time()
 df = preprocessing_missing(df)
-with open('pickled_data/training_set_modified.pickle', 'wb') as f:
-    pickle.dump(df, f, pickle.HIGHEST_PROTOCOL)
-
 df_complete_composite = composite_features(df)
+
+with open('pickled_data/training_set_modified.pickle', 'wb') as f:
+    pickle.dump(df_complete_composite, f, pickle.HIGHEST_PROTOCOL)
+
+print ("Time to preprocess = %.2fs" % (time.time() - prep_time))
+
 train, valid = Train_Validation_Split(df_complete_composite)
 train_features, train_target = remove_variables(df_complete_composite)
 
