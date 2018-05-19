@@ -1,6 +1,6 @@
 '''Random Forest model'''
 
-#TODO: Preprocessing, Hyperparameter tuning
+#TODO: Preprocessing, Hyperparameter tuning, Better plotting
 
 import pandas as pd
 import numpy as np
@@ -12,6 +12,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.preprocessing import normalize
 from preprocessing_missing import preprocessing_missing
 from preprocessing_balance import class_balance
+import matplotlib.pyplot as plt 
 
 
 def remove_variables(dataset, regressor = "booking_bool"):
@@ -27,8 +28,30 @@ def remove_variables(dataset, regressor = "booking_bool"):
 	features = dataset[feature_names].values
 	target = dataset[regressor].values
 
-	return (features, target)
+	return (features, target, feature_names)
 
+
+def plot_feature_importance(classifier_model, regressor = "booking_bool"):
+
+	'''Plot feature importance'''
+
+	feature_importance = classifier_model.feature_importances_
+	# make importances relative to max importance
+	feature_importance = 100.0 * (feature_importance / feature_importance.max())
+	sorted_idx = np.argsort(feature_importance)
+	pos = np.arange(sorted_idx.shape[0]) + .5
+	plt.subplot(1, 2, 2)
+	plt.barh(pos, feature_importance[sorted_idx], align='center')
+	feature_names = np.array(train_sample.columns.values.tolist())
+	print(feature_names)
+	print (sorted_idx)
+
+	plt.yticks(pos, feature_names[sorted_idx])
+	plt.xlabel('Relative Importance')
+	plt.title('Variable Importance' + ' ' + regressor)
+	plt.show()
+
+	return 
 
 
 
@@ -38,15 +61,15 @@ validation_data = pickle.load(open('../pickled_data/validation_data.pkl', 'rb'))
 #PROCESS DATA
 #train_data = train_data.fillna(0, inplace=True)
 train_data = preprocessing_missing(train_data)
-train_data = class_balance(train_data)
+#train_data = class_balance(train_data)
 validation_data = preprocessing_missing(validation_data)
 
 #subset data
-train_sample = train_data
+train_sample = train_data[:10000]
 
 
 #BOOKING MODEL
-features, target = remove_variables(train_sample)
+features, target, feature_names = remove_variables(train_sample)
 
 print(features.shape)
 
@@ -57,7 +80,7 @@ classifier.fit(features, target)
 
 
 #CLICK MODEL
-features, target = remove_variables(train_sample, regressor = "click_bool")
+features, target, feature_names = remove_variables(train_sample, regressor = "click_bool")
 
 #TRAIN MODEL
 print("Training click Classifier...")
@@ -70,7 +93,7 @@ classifier_click.fit(features, target)
 
 #CLEAN TEST DATA
 test_sample = validation_data
-t_features, _ = remove_variables(test_sample)
+t_features, _, _ = remove_variables(test_sample)
 
 #book predictions
 print("Making booking predictions")
@@ -94,6 +117,14 @@ test_sample.sort_values(by = ['srch_id', 'predictions'], ascending=[1, 0], inpla
 print ('Evaluating {} ids...'.format(test_sample['srch_id'].nunique()))
 ndcg = evaluate(test_sample)
 print (ndcg)
+
+plot_feature_importance(classifier)
+plot_feature_importance(classifier_click, regressor = "click_bool")
+
+
+
+
+
 
 
 

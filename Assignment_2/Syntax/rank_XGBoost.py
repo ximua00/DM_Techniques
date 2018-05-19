@@ -10,6 +10,8 @@ from preprocessing_missing import preprocessing_missing
 from preprocessing_balance import class_balance
 from xgboost import XGBClassifier
 
+#Price per person / day
+
 
 
 def remove_variables(dataset, regressor = "booking_bool"):
