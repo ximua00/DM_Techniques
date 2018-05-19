@@ -21,7 +21,7 @@ from SplitData import Train_Validation_Split
 import sys
 sys.path.insert(0, os.path.join('.'))
 from df_to_txt import df_to_txt
-import pyltr_pls_backup
+import lambdamart_model
 
 load_txt = False
 
@@ -53,7 +53,7 @@ if not load_txt:
     df_to_txt(df_test, test_path, add_relevance_grades=True, normalize=True, replace_nas=True)
 
 train_time = time.time()
-model = pyltr_pls_backup.train_model(train_path, val_path, test_path)
+model = lambdamart_model.train_model(train_path, val_path, test_path)
 print("Train time:", time.time() - train_time)
 
 pickle.dump(model, open(os.path.join('..', 'pickled_data', 'lambdamart_model.pkl', 'wb')))
