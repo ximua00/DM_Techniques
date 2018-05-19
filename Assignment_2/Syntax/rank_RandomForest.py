@@ -1,6 +1,6 @@
 '''Random Forest model'''
 
-#TODO: Preprocessing, Hyperparameter tuning
+#TODO: Preprocessing, Hyperparameter tuning, Better plotting
 
 import pandas as pd
 import numpy as np
@@ -8,124 +8,115 @@ import time
 import pickle
 import SplitData
 from evaluate import evaluate_ndcg as evaluate
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.preprocessing import normalize
+from preprocessing_missing import preprocessing_missing
+from preprocessing_balance import class_balance
+import matplotlib.pyplot as plt
+
+
+def remove_variables(dataset, regressor = "booking_bool"):
+	#select variables for model
+	feature_names = list(train_sample.columns)
+	feature_names.remove("click_bool")
+	feature_names.remove("booking_bool")
+	feature_names.remove("gross_bookings_usd")
+	feature_names.remove("date_time")
+	feature_names.remove("position")
+	feature_names.remove("time")
+
+	features = dataset[feature_names].values
+	target = dataset[regressor].values
+
+	return (features, target, feature_names)
+
+
+def plot_feature_importance(classifier_model, regressor = "booking_bool"):
+
+	'''Plot feature importance'''
+
+	feature_importance = classifier_model.feature_importances_
+	# make importances relative to max importance
+	feature_importance = 100.0 * (feature_importance / feature_importance.max())
+	sorted_idx = np.argsort(feature_importance)
+	pos = np.arange(sorted_idx.shape[0]) + .5
+	plt.subplot(1, 2, 2)
+	plt.barh(pos, feature_importance[sorted_idx], align='center')
+	feature_names = np.array(train_sample.columns.values.tolist())
+	print(feature_names)
+	print (sorted_idx)
+
+	plt.yticks(pos, feature_names[sorted_idx])
+	plt.xlabel('Relative Importance')
+	plt.title('Variable Importance' + ' ' + regressor)
+	plt.show()
+
+	return
+
 
 
 train_data = pickle.load(open('../pickled_data/train_data.pkl', 'rb'))
 validation_data = pickle.load(open('../pickled_data/validation_data.pkl', 'rb'))
 
-
-
-#Process data 
-train_data.fillna(0, inplace=True)
-
+#PROCESS DATA
+#train_data = train_data.fillna(0, inplace=True)
+train_data = preprocessing_missing(train_data)
+#train_data = class_balance(train_data)
+validation_data = preprocessing_missing(validation_data)
 
 #subset data
-train_sample = train_data
+train_sample = train_data[:10000]
 
-#select variables for model
-feature_names = list(train_sample.columns)
-feature_names.remove("click_bool")
-feature_names.remove("booking_bool")
-feature_names.remove("gross_bookings_usd")
-feature_names.remove("date_time")
-feature_names.remove("position")
 
-features = train_sample[feature_names].values
-target = train_sample["booking_bool"].values
+#BOOKING MODEL
+features, target, feature_names = remove_variables(train_sample)
 
 print(features.shape)
 
 #TRAIN MODEL
 print("Training booking Classifier...")
-classifier = RandomForestClassifier(n_estimators=50, 
-                                    verbose=2,
-                                    n_jobs=1,
-                                    min_samples_split=10,
-                                    random_state=1)
+classifier = GradientBoostingClassifier(n_estimators = 100, verbose = 2, max_depth = 3)
 classifier.fit(features, target)
 
 
-
-
-
-
-
-train_sample = train_data
-
-#select variables for model
-feature_names = list(train_sample.columns)
-feature_names.remove("click_bool")
-feature_names.remove("booking_bool")
-feature_names.remove("gross_bookings_usd")
-feature_names.remove("date_time")
-feature_names.remove("position")
-
-features = train_sample[feature_names].values
-target = train_sample["click_bool"].values
-
-print(features.shape)
+#CLICK MODEL
+features, target, feature_names = remove_variables(train_sample, regressor = "click_bool")
 
 #TRAIN MODEL
 print("Training click Classifier...")
-classifier_click = RandomForestClassifier(n_estimators=50, 
-                                    verbose=2,
-                                    n_jobs=1,
-                                    min_samples_split=10,
-                                    random_state=1)
+classifier_click = GradientBoostingClassifier(n_estimators = 100, verbose = 2, max_depth = 5)
 classifier_click.fit(features, target)
 
 
 
 
 
-
-
 #CLEAN TEST DATA
-test_sample = validation_data.fillna(value=0)
+test_sample = validation_data
+t_features, _, _ = remove_variables(test_sample)
+
+#book predictions
+print("Making booking predictions")
+predictions = classifier.predict_proba(t_features)[:,1]
+test_sample['predictions_book'] = predictions
+
+#click predictions
+print("Making clicking predictions")
+predictions = classifier_click.predict_proba(t_features)[:,1]
+test_sample['predictions_click'] = predictions
+
 
 #create scores for evaluating
 test_sample['score'] = test_sample['click_bool'] + 4*test_sample['booking_bool']
-
-#remove variables
-test_names = list(["srch_id", "booking_bool"])
-test_resp = test_sample[test_names].values
-
-t_feature_names = list(train_sample.columns)
-t_feature_names.remove("click_bool")
-t_feature_names.remove("booking_bool")
-t_feature_names.remove("gross_bookings_usd")
-t_feature_names.remove("date_time")
-t_feature_names.remove("position")
-
-t_features = test_sample[t_feature_names].values
-t_target = test_sample["booking_bool"].values
-
-print("Making booking predictions")
-predictions = classifier.predict_proba(t_features)[:,1]
-
-test_sample['predictions_book'] = predictions
-
-
-print("Making clicking predictions")
-
-predictions = classifier_click.predict_proba(t_features)[:,1]
-
-test_sample['predictions_click'] = predictions
-
 #Sort data by predictions
-test_sample['predictions'] = test_sample['predictions_click'] + 4*test_sample['predictions_book']
+test_sample['predictions'] = test_sample['predictions_click'] + 5*test_sample['predictions_book']
 test_sample.sort_values(by = ['srch_id', 'predictions'], ascending=[1, 0], inplace = True)
 
 
-#Evaluate test data 
+#Evaluate test data
 print ('Evaluating {} ids...'.format(test_sample['srch_id'].nunique()))
 ndcg = evaluate(test_sample)
 print (ndcg)
 
-
-
-
-
-
-
+plot_feature_importance(classifier)
+plot_feature_importance(classifier_click, regressor = "click_bool")

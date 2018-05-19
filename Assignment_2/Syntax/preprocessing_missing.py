@@ -16,6 +16,7 @@ def preprocessing_missing(dataset, preprocess_flag = True):
 		dataset['time'] = pd.to_datetime(dataset['date_time'])
 		dataset['hour'] = dataset['time'].dt.hour
 		dataset['weekday'] = dataset['time'].dt.dayofweek
+		dataset['month'] = dataset['time'].dt.month
 
 		################################################
 		#Conclusion: Make boolean for weekend
@@ -44,7 +45,8 @@ def preprocessing_missing(dataset, preprocess_flag = True):
 
 		###############################################
 		#remove
-		dataset.drop(columns = ['random_bool'], inplace = True)
+		# dataset.drop(columns = ['random_bool'], inplace = True)
+		dataset.drop(['random_bool'], inplace = True, axis = 1)
 
 		###############################################
 		#comp_rate
@@ -52,11 +54,18 @@ def preprocessing_missing(dataset, preprocess_flag = True):
 		for i in range(1,9):
 			dataset['comp'+str(i)+'_rate'].fillna(-2, inplace = True)
 			dataset['comp'+str(i)+'_inv'].fillna(-2, inplace = True)
-			dataset['comp'+str(i)+'_rate_percent_diff'].fillna(0, inplace = True)
 
 		for i in range(1,9):
 			dataset['comp'+str(i)+'_rate'] += 2
 			dataset['comp'+str(i)+'_inv'] += 2
+
+		for i in range(1,9):
+			dataset['comp'+str(i)+'_diff'] = dataset['comp'+str(i)+'_rate'] * dataset['comp'+str(i)+'_rate_percent_diff']
+			dataset.drop(['comp'+str(i)+'_rate_percent_diff'], inplace = True, axis =1)
+			dataset['comp'+str(i)+'_diff'].fillna(0, inplace = True)
+
+		# dataset['comp8_diff'] = dataset['comp8_rate'] * dataset['comp8_rate_percent_diff']
+		# dataset.drop(columns = ['comp8_rate_percent_diff'], inplace = True)
 
 		###############################################
 		# prop_review_score
@@ -73,3 +82,39 @@ def preprocessing_missing(dataset, preprocess_flag = True):
 		# TODO: gross_bookings_usd
 
 	return dataset
+
+
+def composite_features(dataset):
+	# create additional features to increase performance
+	gdata = dataset.groupby(by = 'prop_country_id')
+	for k, v in gdata:
+	    country_mean = v['price_usd'].mean()
+	    dataset['diff_country_mean'] = country_mean - dataset['price_usd']
+	del gdata
+
+	dataset['cost_per_adult'] = np.where(dataset['srch_adults_count'] > 1, dataset['price_usd']*dataset['srch_room_count']/dataset['srch_adults_count'], dataset['price_usd']*dataset['srch_room_count'])
+	dataset['usd_diff'] = np.where(dataset['visitor_hist_adr_usd'] > 0, dataset['visitor_hist_adr_usd'] - dataset['price_usd'], dataset['price_usd'])
+	dataset['starrating_diff'] = np.where(dataset['visitor_hist_starrating'] > 0, dataset['visitor_hist_starrating'] - dataset['prop_starrating'], dataset['prop_starrating'])
+	dataset['total_cost'] = dataset['price_usd']*dataset['srch_room_count']
+	dataset['total_people_booking'] = dataset['srch_children_count'] + dataset['srch_adults_count']
+	dataset['people_per_room'] = dataset['total_people_booking']/dataset['srch_room_count']
+	dataset['prev_trading_cost_diff'] = np.where(dataset['prop_log_historical_price'] > 0, dataset['price_usd'] - np.exp(dataset['prop_log_historical_price']), dataset['price_usd'])
+	dataset['hotel_click_rate'] = np.where(dataset['srch_query_affinity_score'] < 0, dataset['prop_location_score2']*10**(dataset['srch_query_affinity_score']*np.log(10))*100, -1)
+
+	return dataset
+
+
+def remove_variables(dataset, regressor = "booking_bool"):
+    #select variables for model
+    feature_names = list(dataset.columns)
+    feature_names.remove("click_bool")
+    feature_names.remove("booking_bool")
+    feature_names.remove("gross_bookings_usd")
+    feature_names.remove("date_time")
+    feature_names.remove("position")
+    feature_names.remove("time")
+
+    features = dataset[feature_names].values
+    target = dataset[regressor].values
+
+    return (features, target)
