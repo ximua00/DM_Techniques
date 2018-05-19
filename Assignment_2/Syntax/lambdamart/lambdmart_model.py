@@ -30,7 +30,6 @@ def train_model(train_path, val_path, test_path):
 
     # model.fit(train_X, train_y, train_qids, monitor=monitor)
     model.fit(train_X, train_y, train_qids)
-    # pickle.dump(model, open('..\\pickled_data\\lambdamart_model.pkl', 'wb'))
 
     metric = pyltr.metrics.NDCG(k=10)
 
